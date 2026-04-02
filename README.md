@@ -8,7 +8,7 @@ While many of these ideas are standard and first widely popularized via Martin T
 # Defaults
 Unless specified otherwise, the parameters are
 * queue capacity = 1<<20
-* alignas = 8. Governs 
+* alignas = 8. Governs the alignment of the datastructure memebers of the `ring_buffer` instance
 * no caching of producer/consumer sequences
 * Tested over exchanging 1<<35 int64s.
 
@@ -59,50 +59,50 @@ NUMA:
 # Results
 
 ## Naive, alignas = 8
-45M req/s
+45M exchanges/s
 
 
 ## Naive, alignas = 64
-25M req/s
+25M exchanges/s
 
 Suprisingly, cacheline isolation makes performance worse. Likely because hosting them in a single cacheline updates both producer & consumer records for the other in one unit of cache coherency traffic.
 
 ## Optimized, alignas = 8
-550 req/s
+550M exchanges/s
 
 
 ## Optimized, alignas = 64
-340M req/s
+340M exchanges/s
 
 Surprising again. Cacheline isolation makes performance worse just like with the naive case. This behavior is not replicated with Cached version (see below) though.
 
 ## Cached, alignas=8
-495M req/s
+495M exchanges/s
 
 
 ## Cached, alignas=64
-2200M req/s
+2200M exchanges/s
 
 Here, alignas=64 improves throughput by 5x compared to alignas=8.
 
 
 ## Cached, alignas=64, capacity = 1<<19
-2150M req/s
+2150M exchanges/s
 
 
 ## Cached, alignas=64, capacity = 1<<21
-2090M req/s.
+2090M exchanges/s.
 
 
 ## Cached, alignas=64, capacity = 1<<25
-1900M req/s
+1900M exchanges/s
 
 
 ## Cached, alignas=64, capacity = 1<<15
-295M req/s
+295M exchanges/s
 Queue capacity matters. 10x loss in throughput moving queue capacity from 1<<20 to 1<<15
 
 
 ## Cached, alignas=64, capacity = 1<<10
-20M req/s
+20M exchanges/s
 Queue capacity matters. 100x loss in throughput moving queue capacity from 1<<20 to 1<<10
