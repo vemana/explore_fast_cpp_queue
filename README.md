@@ -1,20 +1,22 @@
 # What is this queue?
-It is a SPSC queue to take full advantage of the hardware and C++'s memory ordering facilities.
+This repo does a quick and dirty benchmark of a few optimizations to a SPSC queue impl. Focused around memory ordering facilities of C++ and datastructure alignment to take full advantage of the hardware.
 
 # Attribution
 While many of these ideas are standard and first widely popularized via Martin Thompson's Mechanical Sympathy (e.g. LMAX Disruptor & later Aeron in Java land), this current code is motivated directly by a [talk](https://youtu.be/qNs0_kKpcIA?si=COnvOPppKrXGaqwP) given by Christopher Fretz. The [slides](https://github.com/boostcon/cppnow_presentations_2025/blob/main/Presentations/Beyond_Sequential_Consistency.pptx) contributed the skeleton and I added the caching optimization based on the talk.
  
 
 # Defaults
-queue capacity = 1<<20
-alignas = 8
-no caching of producer/consumer sequences
-Tested over exchanging 1<<35 int64s.
+Unless specified otherwise, the parameters are
+* queue capacity = 1<<20
+* alignas = 8. Governs 
+* no caching of producer/consumer sequences
+* Tested over exchanging 1<<35 int64s.
 
 # Approaches
-Naive = use sequential consistency reads/writes for producer and consumer cursors.
-Optimized = judicious use of memory order acquire/release instead of sequentially consistent
-Cached = Consumer uses its local cached copy of the producer's cursor as long as items are available for it to consume. It only reads the producer's cursor when it has no items left to process. This has a batching effect. Everytime the consumer reads the producer's cursor, it causes cache coherency traffic because producer is constantly updating and invaliding the consumer's local cpu's cached copy. Once the consumer caches it locally and reads from it most of the time, it amortizes the cache traffic cost over a batch of accesses.
+Different optimizations of the queue
+* Naive = use sequential consistency reads/writes for producer and consumer cursors.
+* Optimized = judicious use of memory order acquire/release instead of sequentially consistent
+* Cached = Consumer uses its local cached copy of the producer's cursor as long as items are available for it to consume. It only reads the producer's cursor when it has no items left to process. This has a batching effect. Everytime the consumer reads the producer's cursor, it causes cache coherency traffic because producer is constantly updating and invaliding the consumer's local cpu's cached copy. Once the consumer caches it locally and reads from it most of the time, it amortizes the cache traffic cost over a batch of accesses.
 
 # Test environment
 
